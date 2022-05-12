@@ -1,3 +1,5 @@
+$("#mineModal").find('.btn-primary')[$("#mineModal").find('.btn-primary').length-1].insertAdjacentHTML("beforeBegin", "<button type='button' class='btn btn-primary' onclick='mineBot(getRewardLocations())'>Solve</button>");
+
 function getEnergyFraction(){
     return App.game.underground.energy / App.game.underground.getMaxEnergy();
 }
@@ -20,8 +22,6 @@ function getRewardLocations(){
     return rewards;
 }
 
-let mineBotEnabled = true;
-
 function mineBot(rewards){
     rewards.map(tile => {
         gainEnergy();
@@ -32,6 +32,8 @@ function mineBot(rewards){
         mineBot(next);
     }
 }
+
+let mineBotEnabled = true;
 
 function mineBotRepeater(){
     if(mineBotEnabled){
