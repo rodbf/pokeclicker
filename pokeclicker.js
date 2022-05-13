@@ -1,4 +1,4 @@
-document.getElementById("left-column").insertAdjacentHTML("afterBegin", "<div id='autoClickers' class='card sortable border-secondary mb-3'> <div class='card-header p-0' data-toggle='collapse' href='#autoClickersSelectorBody' aria-expanded='true'><span>Auto Clickers</span></div><div id='autoClickersSelectorBody' class='card-body p-0 table-responsive collapse show' style=''> <div class='autoClickerRow'> <div class='autoClickerColumnHalf autoClickerToggle'> <input type='checkbox' id='battleAutoClicker'> <span>Battle</span> </div><div class='autoClickerColumnHalf autoClickerToggle'> <select id='battleStrategySelect'></select> </div></div><div class='autoClickerRow'> <div class='autoClickerColumnHalf autoClickerToggle'> <input type='checkbox' id='dungeonAutoClicker'> <span>Dungeon</span> </div><div class='autoClickerColumnHalf autoClickerToggle'> <select id='dungeonStrategySelect'></select> </div></div><div class='autoClickerRow'> <div class='autoClickerColumnHalf autoClickerToggle'> <input type='checkbox' id='farmAutoClicker'> <span>Farm</span> </div><div class='autoClickerColumnHalf autoClickerToggle'> <select id='farmStrategySelect'></select> </div></div><div class='autoClickerRow'> <div class='autoClickerColumnHalf autoClickerToggle'> <input type='checkbox' id='hatcheryAutoClicker'/> <span>Hatchery</span> </div><div class='autoClickerColumnHalf autoClickerToggle'> <select id='hatcheryStrategySelect'></select> </div></div><div class='autoClickerRow'> <div class='autoClickerColumnHalf autoClickerToggle'> <input type='checkbox' id='gymAutoClicker'> <span>Gym</span> </div><div class='autoClickerColumnHalf autoClickerToggle'> <select id='gymStrategySelect'></select> </div></div><div class='autoClickerRow'> <div class='autoClickerColumnHalf autoClickerToggle'> <input type='checkbox' id='bombAutoClicker'> <span>Bombs</span> </div><div class='autoClickerColumnHalf autoClickerToggle'> </div></div></div></div>");
+document.getElementById("middle-column").insertAdjacentHTML("afterBegin", "<div id='autoClickers' class='card sortable border-secondary mb-3'> <div class='card-header p-0' data-toggle='collapse' href='#autoClickersSelectorBody' aria-expanded='true'><span>Auto Clickers</span></div><div id='autoClickersSelectorBody' class='card-body p-0 table-responsive collapse show' style=''> <div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='battleAutoClicker'/> <span>Battle</span> </div><div class='autoClickerColumn'> <select id='battleStrategySelect'></select> </div><div class='autoClickerColumn'> <input type='number' id='achievementKillCount'/> </div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='dungeonAutoClicker'/> <span>Dungeon</span> </div><div class='autoClickerColumn'> <select id='dungeonStrategySelect'></select> </div><div class='autoClickerColumn'> </div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='farmAutoClicker'/> <span>Farm</span> </div><div class='autoClickerColumn'> <select id='farmStrategySelect'></select> </div><div class='autoClickerColumn'> <select id='farmMulchSelect'></select></div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='hatcheryAutoClicker'/> <span>Hatchery</span> </div><div class='autoClickerColumn'> <select id='hatcheryStrategySelect'></select> </div><div class='autoClickerColumn'> <select id='hatcheryTypeSelect'></select> </div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='gymAutoClicker'/> <span>Gym</span> </div><div class='autoClickerColumn'> <select id='gymStrategySelect'></select> </div><div class='autoClickerColumn'> <input type='checkbox' id='gymAutoMove'/> <span>Auto Move(TODO)</span></div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='bombAutoClicker'/> <span>Bombs</span> </div><div class='autoClickerColumn'> <input type='checkbox' id='purchaseAutoClicker'/> <span>Buy Items</span></div><div class='autoClickerColumn'> <input type='checkbox' id='purchaseMulchAutoClicker'/> <span>Buy Mulch</span></div></div></div></div>");
 
 function createClass(name,rules){
     var style = document.createElement('style');
@@ -10,11 +10,11 @@ function createClass(name,rules){
         style.sheet.insertRule(name+"{"+rules+"}",0);
 }
 
-createClass('.autoClickerToggle',"display: flex; align-items: center; margin-left: 12px; width: 100%;");
-createClass('.autoClickerToggle input, .autoClickerToggle select',"margin-right: 8px;");
-createClass('.autoClickerToggle select',"width: 100%;");
-createClass(".autoClickerRow", "display: flex; align-items: center;");
-createClass(".autoClickerColumnHalf", "width: 50%");
+//createClass('.autoClickerToggle',"display: flex; align-items: center; margin-left: 12px; width: 100%;");
+createClass('.autoClickerColumn input, .autoClickerColumn select',"margin-right: 8px; max-width:100%");
+createClass('.autoClickerColumn select',"width: 100%;");
+createClass(".autoClickerRow", "display: flex; align-items: center; text-align: left;");
+createClass(".autoClickerColumn", "width: 33%;padding: 5px;");
 createClass(".autoClickerRow:nth-child(2n)", "background-color: rgba(0,0,0,.05); ")
 createClass(".autoClickerRow:not(:last-child)", "border-bottom-color: rgb(128, 128, 128);")
 
@@ -171,7 +171,7 @@ document.getElementById("gymAutoClicker").addEventListener("click", toggleGymAut
 
 /*start farm*/
 let farmAutoClickerIntervalId;
-let farmAutoClickerDelay = 500;
+let farmAutoClickerDelay = 1;
 
 function toggleFarmAutoClicker(){
     if(farmAutoClickerIntervalId){
@@ -209,7 +209,7 @@ function clickFarm(){
 function populateFarmStrategies(){
     let select = document.getElementById("farmStrategySelect");
 
-    let options = ['Replant', 'Mutate', 'Plant Selected'];
+    let options = ['Boost', 'Max Harvest', 'Rich Replant', 'Replant', 'Rich Mutate', 'Mutate', 'Plant Selected'];
 
     for(var i = 0; i < options.length; i++) {
         var opt = options[i];
