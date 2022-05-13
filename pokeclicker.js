@@ -186,7 +186,7 @@ function toggleFarmAutoClicker(){
 function clickFarm(){
     let plots = App.game.farming.plotList;
     let strategy = document.getElementById("farmStrategySelect").value;
-
+    let mulchStrategy = document.getElementById("farmMulchSelect").value;
     if(strategy == 'Plant Selected'){
         App.game.farming.harvestAll();
         App.game.farming.plantAll(FarmController.selectedBerry());
@@ -196,20 +196,66 @@ function clickFarm(){
     for(let i = 0; i < plots.length; i++){
         plot = plots[i];
         const berry = plot.berry;
-        if(plot.stage() == 4){
-            if(strategy != 'Mutate' || plot.age > plot.berryData.growthTime[4] -10){
-                App.game.farming.harvest(i);
-                App.game.farming.plant(i, berry);
-            }
-        
+        const mulchIndex = shouldMulch(plot, mulchStrategy);
+        if(mulchIndex != -1){
+            App.game.farming.addMulch(i, mulchIndex, 1);
         }
+        if(shouldHarvest(plot)){
+            App.game.farming.harvest(i);
+            App.game.farming.plant(i, berry);
+        }        
+    }
+}
+
+function shouldHarvest(plot){
+    if(plot.stage() != 4) return false;
+    let strat = document.getElementById("farmStrategySelect").value;
+    if(strat == 'Replant Early') return true;
+    if(strat == 'Replant Late') return plot.age > plot.berryData.growthTime[4] - 15;
+}
+
+function shouldMulch(plot, strat){
+    if(plot.mulch != -1) return -1;
+    if (plot.berry == BerryType.None){
+        return strat == 'Surprise Open' ? 2 : -1;
+    }
+    switch(strat){
+        case 'None': 
+            return -1;
+        case 'Boost All':
+            if(plot.stage() == 4){ 
+                return -1
+            }
+            return 0;
+        case 'Rich Only':
+            if(shouldHarvest(plot)){
+                return 1;
+            }
+            return -1;
+        case 'Boost + Rich':
+            if(plot.stage() == 4){
+                return 1;
+            }
+            if(plot.age < plot.berryData.growthTime[3] - 600){//boost until 10min left (not counting Sprayduck)
+                return 0;
+            }
+            return -1;
+        case 'Surprise Planted':
+            if(plot.berry != BerryType.None){
+                return 2;
+            }
+            return -1;
+        case 'Surprise All':
+            return 2;
+        default:
+            return -1;
     }
 }
 
 function populateFarmStrategies(){
     let select = document.getElementById("farmStrategySelect");
 
-    let options = ['Boost', 'Max Harvest', 'Rich Replant', 'Replant', 'Rich Mutate', 'Mutate', 'Plant Selected'];
+    let options = ['Replant Early', 'Replant Late', 'Plant Selected'];
 
     for(var i = 0; i < options.length; i++) {
         var opt = options[i];
@@ -220,6 +266,23 @@ function populateFarmStrategies(){
     }
 }
 populateFarmStrategies();
+
+function populateMulchStrategies(){
+    let select = document.getElementById("farmMulchSelect");
+
+    let options = ['None', 'Boost All', 'Rich Only', 'Boost + Rich', 'Surprise Open', 'Surprise Planted', 'Surprise All'];
+
+    for(var i = 0; i < options.length; i++) {
+        var opt = options[i];
+        var el = document.createElement("option");
+        el.textContent = opt;
+        el.value = opt;
+        select.appendChild(el);
+    }
+}
+populateMulchStrategies();
+
+
 document.getElementById("farmAutoClicker").addEventListener("click", toggleFarmAutoClicker);
 /*end farm*/
 
@@ -608,4 +671,88 @@ populateDungeonStrategies();
 document.getElementById("dungeonAutoClicker").addEventListener("click", toggleDungeonAutoClicker);
 /*end dungeon*/
 
+/*start autobuy*/
+let autobuyIntervalId;
+let autobuyMulchIntervalId;
+let autobuyClickerDelay = 1000;
 
+function toggleAutobuy(){
+    if(autobuyIntervalId){
+        clearInterval(autobuyIntervalId);
+    }
+    autobuyIntervalId = null;
+    if(document.getElementById("purchaseAutoClicker").checked){
+        autobuyIntervalId = setInterval(autobuy, autobuyClickerDelay);
+    }
+}
+
+function toggleAutobuyMulch(){
+    if(autobuyMulchIntervalId){
+        clearInterval(autobuyMulchIntervalId);
+    }
+    autobuyMulchIntervalId = null;
+    if(document.getElementById("purchaseAutoClicker").checked){
+        autobuyMulchIntervalId = setInterval(autobuyMulch, autobuyClickerDelay);
+    }
+}
+
+let autobuyItems = [
+    {name:'Ultraball', value:2000, amount:3000},
+    {name:'xAttack', value:600, amount:3000},
+    {name:'xClick', value:400, amount:3000},
+    {name:'Lucky_egg', value:800, amount:3000},
+    {name:'Token_collector', value:1000, amount:3000},
+    {name:'Item_magnet', value:1500, amount:3000},
+    {name:'Lucky_incense', value:2000, amount:3000},
+    {name:'Boost_Mulch', value:50, amount:250000},
+    {name:'Rich_Mulch', value:100, amount:200, index:1},
+    {name:'Surprise_Mulch', value:150, amount:300, index:2},
+];
+
+function autobuy(){
+    if(!autobuyEnabled) return;
+    autobuyItems.filter(item => !item.name.includes('Mulch')).forEach(item =>{
+        if(shouldBuy(item)) {
+            ItemList[item.name].buy(50);
+        }
+    })
+}
+function autobuyMulch(){
+    if(!autobuyEnabled) return;
+    autobuyItems.filter(item => item.name.includes('Mulch')).forEach(item =>{
+        if(shouldBuy(item)) {
+            ItemList[item.name].buy(50);
+        }
+    })
+}
+
+
+function shouldBuy(item){
+    if(ItemList[item.name].price() > item.value) return false;
+    if(item.name == 'Ultraball'){
+        return App.game.pokeballs.pokeballs[2].quantity() < item.amount;
+    }
+    if(item.name == 'Boost_Mulch'){
+        return App.game.wallet.currencies[4]() > item.amount;
+    }
+    if(item.name.includes('Mulch') ){
+        return App.game.farming.mulchList[item.index]() < item.amount;
+    }
+    return player.itemList[item.name]() < item.amount;
+}
+
+function autobuy(){
+    if(App.game.underground.energy >= App.game.underground.getMaxEnergy() - 10 ){
+        Mine.bomb();
+    }
+}
+function autobuyMulch(){
+    if(App.game.underground.energy >= App.game.underground.getMaxEnergy() - 10 ){
+        Mine.bomb();
+    }
+}
+
+document.getElementById("bombAutoClicker").addEventListener("click", toggleBombAutoClicker);
+
+
+/*end autobuy */
