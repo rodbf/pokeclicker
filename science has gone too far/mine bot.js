@@ -8,6 +8,12 @@ function gainEnergy(){
     if(getEnergyFraction() < 0.5){
         ItemList['SmallRestore'].use();
     }
+    if(getEnergyFraction() < 0.4){
+        ItemList['MediumRestore'].use();
+    }
+    if(getEnergyFraction() < 0.3){
+        ItemList['LargeRestore'].use();
+    }
 }
 
 function getRewardLocations(){
