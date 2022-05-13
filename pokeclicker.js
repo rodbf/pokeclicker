@@ -233,7 +233,7 @@ function shouldMulch(plot, strat){
             }
             return -1;
         case 'Boost + Rich':
-            if(plot.stage() == 4){
+            if(shouldHarvest(plot)){
                 return 1;
             }
             if(plot.age < plot.berryData.growthTime[3] - 600){//boost until 10min left (not counting Sprayduck)
