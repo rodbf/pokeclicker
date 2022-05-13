@@ -1,4 +1,4 @@
-document.getElementById("middle-column").insertAdjacentHTML("afterBegin", "<div id='autoClickers' class='card sortable border-secondary mb-3'> <div class='card-header p-0' data-toggle='collapse' href='#autoClickersSelectorBody' aria-expanded='true'><span>Auto Clickers</span></div><div id='autoClickersSelectorBody' class='card-body p-0 table-responsive collapse show' style=''> <div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='battleAutoClicker'/> <span>Battle</span> </div><div class='autoClickerColumn'> <select id='battleStrategySelect'></select> </div><div class='autoClickerColumn'> <input type='number' id='achievementKillCount'/> </div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='dungeonAutoClicker'/> <span>Dungeon</span> </div><div class='autoClickerColumn'> <select id='dungeonStrategySelect'></select> </div><div class='autoClickerColumn'> </div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='farmAutoClicker'/> <span>Farm</span> </div><div class='autoClickerColumn'> <select id='farmStrategySelect'></select> </div><div class='autoClickerColumn'> <select id='farmMulchSelect'></select></div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='hatcheryAutoClicker'/> <span>Hatchery</span> </div><div class='autoClickerColumn'> <select id='hatcheryStrategySelect'></select> </div><div class='autoClickerColumn'> <select id='hatcheryTypeSelect'></select> </div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='gymAutoClicker'/> <span>Gym</span> </div><div class='autoClickerColumn'> <select id='gymStrategySelect'></select> </div><div class='autoClickerColumn'> <input type='checkbox' id='gymAutoMove'/> <span>Auto Move(TODO)</span></div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='bombAutoClicker'/> <span>Bombs</span> </div><div class='autoClickerColumn'> <input type='checkbox' id='purchaseAutoClicker'/> <span>Buy Items</span></div><div class='autoClickerColumn'> <input type='checkbox' id='purchaseMulchAutoClicker'/> <span>Buy Mulch</span></div></div></div></div>");
+document.getElementById("middle-column").insertAdjacentHTML("afterBegin", "<div id='autoClickers' class='card sortable border-secondary mb-3'> <div class='card-header p-0' data-toggle='collapse' href='#autoClickersSelectorBody' aria-expanded='true'><span>Auto Clickers</span></div><div id='autoClickersSelectorBody' class='card-body p-0 table-responsive collapse show' style=''> <div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='battleAutoClicker'/> <span>Battle</span> </div><div class='autoClickerColumn'> <select id='battleStrategySelect'></select> </div><div class='autoClickerColumn'> <input type='number' id='achievementKillCount'/> </div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='dungeonAutoClicker'/> <span>Dungeon</span> </div><div class='autoClickerColumn'> <select id='dungeonStrategySelect'></select> </div><div class='autoClickerColumn'> </div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='farmAutoClicker'/> <span>Farm</span> </div><div class='autoClickerColumn'> <select id='farmStrategySelect'></select> </div><div class='autoClickerColumn'> <select id='farmMulchSelect'></select></div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='hatcheryAutoClicker'/> <span>Hatchery</span> </div><div class='autoClickerColumn'> <select id='hatcheryStrategySelect'></select> </div><div class='autoClickerColumn'> <select id='hatcheryTypeSelect'></select> </div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='gymAutoClicker'/> <span>Gym</span> </div><div class='autoClickerColumn'> <select id='gymStrategySelect'></select> </div><div class='autoClickerColumn'> <input type='checkbox' id='gymAutoMove'/> <span>Auto Move*</span></div></div><div class='autoClickerRow'> <div class='autoClickerColumn'> <input type='checkbox' id='bombAutoClicker'/> <span>Bombs</span> </div><div class='autoClickerColumn'> <input type='checkbox' id='purchaseAutoClicker'/> <span>Buy Items</span></div><div class='autoClickerColumn'> <input type='checkbox' id='purchaseMulchAutoClicker'/> <span>Buy Mulch</span></div></div></div></div>");
 
 function createClass(name,rules){
     var style = document.createElement('style');
@@ -691,7 +691,7 @@ function toggleAutobuyMulch(){
         clearInterval(autobuyMulchIntervalId);
     }
     autobuyMulchIntervalId = null;
-    if(document.getElementById("purchaseAutoClicker").checked){
+    if(document.getElementById("purchaseMulchAutoClicker").checked){
         autobuyMulchIntervalId = setInterval(autobuyMulch, autobuyClickerDelay);
     }
 }
@@ -710,16 +710,16 @@ let autobuyItems = [
 ];
 
 function autobuy(){
-    if(!autobuyEnabled) return;
-    autobuyItems.filter(item => !item.name.includes('Mulch')).forEach(item =>{
+    autobuyItems.filter(item => !item.name.includes('Mulch'))
+    .forEach(item =>{
         if(shouldBuy(item)) {
             ItemList[item.name].buy(50);
         }
     })
 }
 function autobuyMulch(){
-    if(!autobuyEnabled) return;
-    autobuyItems.filter(item => item.name.includes('Mulch')).forEach(item =>{
+    autobuyItems.filter(item => item.name.includes('Mulch'))
+    .forEach(item =>{
         if(shouldBuy(item)) {
             ItemList[item.name].buy(50);
         }
@@ -741,18 +741,8 @@ function shouldBuy(item){
     return player.itemList[item.name]() < item.amount;
 }
 
-function autobuy(){
-    if(App.game.underground.energy >= App.game.underground.getMaxEnergy() - 10 ){
-        Mine.bomb();
-    }
-}
-function autobuyMulch(){
-    if(App.game.underground.energy >= App.game.underground.getMaxEnergy() - 10 ){
-        Mine.bomb();
-    }
-}
-
-document.getElementById("bombAutoClicker").addEventListener("click", toggleBombAutoClicker);
+document.getElementById("purchaseAutoClicker").addEventListener("click", toggleAutobuy);
+document.getElementById("purchaseMulchAutoClicker").addEventListener("click", toggleAutobuyMulch);
 
 
 /*end autobuy */
