@@ -36,11 +36,10 @@ const position = ["beforeEnd", "middle-column"]; // recommended options: (before
 */
 const declarations = {
   autoBomber: () => {
-
     const shouldBomb = () => {
       return (App.game.underground.energy >= (App.game.underground.getMaxEnergy() - 10));
     }
-
+    
     const clickBomb = () => {
       if(shouldBomb()){
         Mine.bomb();
