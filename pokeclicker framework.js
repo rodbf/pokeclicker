@@ -573,7 +573,7 @@ const declarations = {
   
   bomber: () => {
     
-    const shouldBomb = () => (App.game.underground.energy >= (App.game.underground.getMaxEnergy() - 10));
+    const shouldBomb = () => (App.game.underground.energy >= (App.game.underground.getMaxEnergy() - 20));
     const shouldBuy = (item) => {
         if(ItemList[item.name].price() > item.value) return false;
         if(item.name == 'Ultraball'){
