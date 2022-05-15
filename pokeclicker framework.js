@@ -6,7 +6,9 @@ const storage = {};
 layout config
 */
 const maxColumns = 3; // maximum amount of inputs per row
-const position = ["beforeEnd", "right-column"]; // recommended options: (beforeEnd, afterStart), (left-column, middle-column, right-column)
+
+const position = ["beforeEnd", "middle-column"]; // recommended options: (beforeEnd, afterStart), (left-column, middle-column, right-column)
+
 
 
 /* 
@@ -72,7 +74,8 @@ const declarations = {
     function clickBattle(){
       const autoMasterball = document.getElementById("routeMasterballToggle").checked;
       if(autoMasterball){
-        if(PokemonHelper.getPokemonById(Battle.enemyPokemon().id).catchRate < 10 && Battle.enemyPokemon().shiny ){
+        if(Battle.enemyPokemon() && PokemonHelper.getPokemonById(Battle.enemyPokemon().id).catchRate < 10 && Battle.enemyPokemon().shiny ){
+
           App.game.pokeballs.notCaughtShinySelection = 3;
         }
         else{
@@ -448,6 +451,7 @@ const declarations = {
     const inputs = [
       {type: "checkbox", id: "hatcheryToggle", label: "Hatchery", onClick},
       {type: "select", id: "hatcheryStrategies"},
+
       {type: "checkbox", id: "hatcheryQueueToggle", label: "Use queue"}
     ];
     
@@ -457,27 +461,75 @@ const declarations = {
   farm: () => {
     
     function execute(){
-      let plots = App.game.farming.plotList;
-      let strategy = document.getElementById("farmStrategies").value;
-      
-      if(strategy == 'Plant Selected'){
-        App.game.farming.harvestAll();
-        App.game.farming.plantAll(FarmController.selectedBerry());
-        return;
-      }
-      
-      for(let i = 0; i < plots.length; i++){
-        plot = plots[i];
-        const berry = plot.berry;
-        if(plot.stage() == 4){
-          if(strategy != 'Mutate' || plot.age > plot.berryData.growthTime[4] -10){
-            App.game.farming.harvest(i);
-            App.game.farming.plant(i, berry);
-          }
+        let plots = App.game.farming.plotList;
+        let strategy = document.getElementById("farmStrategies").value;
+        let mulchStrategy = document.getElementById("mulchStrategies").value;
+        if(strategy == 'Plant Selected'){
+            App.game.farming.harvestAll();
+            App.game.farming.plantAll(FarmController.selectedBerry());
+            return;
         }
-      }
+    
+        for(let i = 0; i < plots.length; i++){
+            plot = plots[i];
+            const berry = plot.berry;
+            const mulchIndex = shouldMulch(plot, mulchStrategy);
+            if(mulchIndex != -1){
+                App.game.farming.addMulch(i, mulchIndex, 1);
+            }
+            if(shouldHarvest(plot)){
+                App.game.farming.harvest(i);
+                App.game.farming.plant(i, berry);
+            }        
+        }
     }
     
+    function shouldHarvest(plot){
+        if(plot.stage() != 4) return false;
+        let strat = document.getElementById("farmStrategies").value;
+        if(strat == 'Replant Early') return true;
+        if(strat == 'Replant Late') return plot.age > plot.berryData.growthTime[4] - 15;
+    }
+    
+    function shouldMulch(plot, strat){
+        if(plot.mulch != -1) return -1;
+        if (plot.berry == BerryType.None){
+            return strat == 'Surprise Open' ? 2 : -1;
+        }
+        switch(strat){
+            case 'None': 
+                return -1;
+            case 'Boost All':
+                if(plot.stage() == 4){ 
+                    return -1
+                }
+                return 0;
+            case 'Rich Only':
+                if(shouldHarvest(plot)){
+                    return 1;
+                }
+                return -1;
+            case 'Boost + Rich':
+                if(shouldHarvest(plot)){
+                    return 1;
+                }
+                if(plot.age < plot.berryData.growthTime[3] - 800){//boost until 10min left (not counting Sprayduck)
+                    return 0;
+                }
+                return -1;
+            case 'Surprise Planted':
+                if(plot.berry != BerryType.None){
+                    return 2;
+                }
+                return -1;
+            case 'Surprise All':
+                return 2;
+            default:
+                return -1;
+        }
+    }
+
+
     const farmAction = createAction({
       execute,
       endCondition: ()=>!document.getElementById("farmToggle").checked
@@ -494,12 +546,24 @@ const declarations = {
       {
         type: "select", id: "farmStrategies", 
         options: [
-          {value: "Replant"},
-          {value: "Mutate"},
+          {value: "Replant Early"},
+          {value: "Replant Late"},
           {value: "Plant Selected"}
         ]
       },
-      {type: "gap"}
+      {
+        type: "select", id: "mulchStrategies", 
+        options: [
+            {value:'None'},
+            {value:'Boost All'}, 
+            {value:'Rich Only'}, 
+            {value:'Boost + Rich'},
+            {value:'Surprise Open'},
+            {value:'Surprise Planted'}, 
+            {value:'Surprise All'}
+        ]
+      },
+
     ];
     
     return {inputs};
@@ -508,26 +572,94 @@ const declarations = {
   bomber: () => {
     
     const shouldBomb = () => (App.game.underground.energy >= (App.game.underground.getMaxEnergy() - 10));
-    
-    const execute = () => {
+    const shouldBuy = (item) => {
+        if(ItemList[item.name].price() > item.value) return false;
+        if(item.name == 'Ultraball'){
+            return App.game.pokeballs.pokeballs[2].quantity() < item.amount;
+        }
+        if(item.name == 'Boost_Mulch'){
+            return App.game.wallet.currencies[4]() > item.amount;
+        }
+        if(item.name.includes('Mulch') ){
+            return App.game.farming.mulchList[item.index]() < item.amount;
+        }
+        return player.itemList[item.name]() < item.amount;
+    }
+    const executeBomb = () => {
+
       if(shouldBomb()){
         Mine.bomb();
       }
     }
+    const executeBuy = () => {
+        autobuyItems.filter(item => !item.name.includes('Mulch'))
+        .forEach(item =>{
+            if(shouldBuy(item)){
+                ItemList[item.name].buy(50);
+            }
+        });
+      }
+    const executeBuyMulch = () => {
+        autobuyItems.filter(item => !item.name.includes('Mulch'))
+        .forEach(item =>{
+            if(shouldBuy(item)){
+                ItemList[item.name].buy(50);
+            }
+        });
+    }
+    
+
     
     const bombAction = createAction({
-      execute,
+      execute:executeBomb,
       endCondition: ()=>!document.getElementById("bomberToggle").checked
     });
+    const buyAction = createAction({
+        execute:executeBuy,
+        endCondition: ()=>!document.getElementById("buyToggle").checked
+    });
+    const buyMulchAction = createAction({
+        execute:executeBuyMulch,
+        endCondition: ()=>!document.getElementById("buyMulchToggle").checked
+    });
     
-    const onClick = () => {
+    const onClickBomb = () => {
+        
+
       if(document.getElementById("bomberToggle").checked){
         activeActions.push(bombAction);
       }
     }
+    const onClickBuy = () => {
+        if(document.getElementById("buyToggle").checked){
+          activeActions.push(buyAction);
+        }
+    }
+    const onClickBuyMulch = () => {
+        if(document.getElementById("buyMulchToggle").checked){
+            activeActions.push(buyMulchAction);
+        }
+    }
     
+    
+    const autobuyItems = [
+        {name:'Ultraball', value:2000, amount:3000},
+        {name:'xAttack', value:600, amount:3000},
+        {name:'xClick', value:400, amount:3000},
+        {name:'Lucky_egg', value:800, amount:3000},
+        {name:'Token_collector', value:1000, amount:3000},
+        {name:'Item_magnet', value:1500, amount:3000},
+        {name:'Lucky_incense', value:2000, amount:3000},
+        {name:'Boost_Mulch', value:50, amount:250000},
+        {name:'Rich_Mulch', value:100, amount:200, index:1},
+        {name:'Surprise_Mulch', value:150, amount:300, index:2},
+    ];
+
     const inputs = [
-      {type: "checkbox", id: "bomberToggle", label: "Bombs", onClick}
+      {type: "checkbox", id: "bomberToggle", label: "Bombs", onClick:onClickBomb},
+      {type: "checkbox", id: "buyToggle", label: "Buy Item ", onClick:onClickBuy},
+      {type: "checkbox", id: "buyMulchToggle", label: "Buy Mulch", onClick:onClickBuyMulch}
+
     ];
     
     return {inputs};
