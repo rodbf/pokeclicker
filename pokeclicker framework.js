@@ -6,7 +6,7 @@ const storage = {};
 layout config
 */
 const maxColumns = 3; // maximum amount of inputs per row
-const position = ["beforeEnd", "middle-column"]; // recommended options: (beforeEnd, afterStart), (left-column, middle-column, right-column)
+const position = ["beforeEnd", "right-column"]; // recommended options: (beforeEnd, afterStart), (left-column, middle-column, right-column)
 
 
 /* 
@@ -407,26 +407,29 @@ const declarations = {
       for(let i = 3; i >= 0; i--){
         App.game.breeding.hatchPokemonEgg(i);
       }
-      if(App.game.breeding.hasFreeEggSlot()){
-        let strat = document.getElementById("hatcheryStrategies").value;
-        if(strat.includes('egg')){
-          ItemList[strat].use();
-          populateStrategies();
-        }
-        else{
-          let pokeList = PartyController.getHatcherySortedList().filter( poke => {
-            return poke.level == 100 && poke.breeding == false && (strat.includes('no Shinies') ? !poke.shiny : true)
-          });
-          if(strat.includes('Highest')){
-            for(let i = 0; i < pokeList.length; i++){
-              let poke = pokeList[i];
-              if(PokemonHelper.calcNativeRegion(poke.id) == player.highestRegion()){
-                App.game.breeding.addPokemonToHatchery(poke);
-                return;
+      for(let i = 7; i >= 0; i--){
+        const queue = document.getElementById("hatcheryQueueToggle").checked;
+        if((!queue && App.game.breeding.hasFreeEggSlot()) || (queue && App.game.breeding.queueList().length < 4)){
+          let strat = document.getElementById("hatcheryStrategies").value;
+          if(strat.includes('egg')){
+            ItemList[strat].use();
+            populateStrategies();
+          }
+          else{
+            let pokeList = PartyController.getHatcherySortedList().filter( poke => {
+              return poke.level == 100 && poke.breeding == false && (strat.includes('no Shinies') ? !poke.shiny : true)
+            });
+            if(strat.includes('Highest')){
+              for(let i = 0; i < pokeList.length; i++){
+                let poke = pokeList[i];
+                if(PokemonHelper.calcNativeRegion(poke.id) == player.highestRegion()){
+                  App.game.breeding.addPokemonToHatchery(poke);
+                  return;
+                }
               }
             }
+            App.game.breeding.addPokemonToHatchery(pokeList[0]);
           }
-          App.game.breeding.addPokemonToHatchery(pokeList[0]);
         }
       }
     }
@@ -445,7 +448,7 @@ const declarations = {
     const inputs = [
       {type: "checkbox", id: "hatcheryToggle", label: "Hatchery", onClick},
       {type: "select", id: "hatcheryStrategies"},
-      {type: "gap"}
+      {type: "checkbox", id: "hatcheryQueueToggle", label: "Use queue"}
     ];
     
     return {inputs, init: populateStrategies};
