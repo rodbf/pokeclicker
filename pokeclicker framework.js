@@ -1,13 +1,12 @@
 const activeActions = [];
 const mainInterval = 1000;
-const storage = {};
 
 /*
 layout config
 */
 const maxColumns = 3; // maximum amount of inputs per row
 
-const position = ["beforeEnd", "middle-column"]; // recommended options: (beforeEnd, afterStart), (left-column, middle-column, right-column)
+const position = ["beforeEnd", "right-column"]; // recommended options: (beforeEnd, afterStart), (left-column, middle-column, right-column)
 
 
 
@@ -298,7 +297,7 @@ const declarations = {
     }
 
     function dungeonClicker(){
-      if((App.game.gameState == GameConstants.GameState.town) && player.town().dungeon){
+      if((App.game.gameState == GameConstants.GameState.town) && player.town().dungeon && document.getElementById("dungeonToggle").checked){
           DungeonRunner.initializeDungeon(player.town().dungeon);
       }
       if(!(App.game.gameState === GameConstants.GameState.dungeon)){
@@ -321,10 +320,13 @@ const declarations = {
     }
     
     function stopDungeonClicker(){
-      if(dungeonClickerIntervalId){
+      if(dungeonClickerIntervalId && App.game.gameState != GameConstants.GameState.dungeon){
         clearInterval(dungeonClickerIntervalId);
+        dungeonClickerIntervalId = null;
       }
-      dungeonClickerIntervalId = null;
+      else{
+        setTimeout(stopDungeonClicker, 200);
+      }
     }
     
     const dungeonAction = createAction({
@@ -488,7 +490,7 @@ const declarations = {
         if(plot.stage() != 4) return false;
         let strat = document.getElementById("farmStrategies").value;
         if(strat == 'Replant Early') return true;
-        if(strat == 'Replant Late') return plot.age > plot.berryData.growthTime[4] - 15;
+        if(strat == 'Replant Late') return plot.age > plot.berryData.growthTime[4] - 3;
     }
     
     function shouldMulch(plot, strat){
