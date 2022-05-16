@@ -138,10 +138,11 @@ const declarations = {
     
     function clickBattle(){
       let strategy = document.getElementById("gymStrategies").value;
-      if(shouldMoveGym()){
-        nextGym();
-      }
+      
       if(App.game.gameState == GameConstants.GameState.town){
+        if(shouldMoveGym()){
+          nextGym();
+        }
         if(strategy == 'Champion'){
           for(let i = 0; i < player.town().content.length; i++){
             if(player.town().content[i] instanceof Champion){
@@ -188,6 +189,7 @@ const declarations = {
       const routeStrat = document.getElementById("routeStrategies").value;
       if(routeStrat != 'Achievement') return false;
       const currentGymList = player.town().content.filter(content => content instanceof Gym);
+      if(currentGymList.length == 0) return false;
       let gym, gymNum;
       if(currentGymList.length == 1){
           gym = currentGymList[0];
@@ -198,7 +200,7 @@ const declarations = {
           let i = parseInt(strategy);
           gym = currentGymList[i-1];
       }
-      gymNum = gym.badgeReward;
+      gymNum = GameConstants.getGymIndex(gym.parent.name);
       return App.game.statistics.gymsDefeated[gymNum]() > 1000;
     }
     
