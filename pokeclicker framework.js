@@ -138,6 +138,9 @@ const declarations = {
     
     function clickBattle(){
       let strategy = document.getElementById("gymStrategies").value;
+      if(shouldMoveGym()){
+        nextGym();
+      }
       if(App.game.gameState == GameConstants.GameState.town){
         if(strategy == 'Champion'){
           for(let i = 0; i < player.town().content.length; i++){
@@ -158,6 +161,45 @@ const declarations = {
       if(App.game.gameState == GameConstants.GameState.gym){
         GymBattle.clickAttack();
       }
+    }
+
+    function nextGym(){
+      var gymArray = Object.keys(GymList)
+      .map(function(key) {
+          return GymList[key];
+      });
+      const currentGymList = player.town().content.filter(content => content instanceof Gym);
+      if(currentGymList.length == 1){
+          let gym = currentGymList[0];
+          let gymNum = gym.badgeReward;
+          let nextGym = gymArray.find(gym => gym.badgeReward == gymNum +1);
+          MapHelper.moveToTown(nextGym.parent.name);
+      }
+      else{
+          let strategy = document.getElementById("gymStrategies").value;
+          if(strategy == 'Champion') return;
+          let i = parseInt(strategy);
+          if(i == 4) document.getElementById("gymStrategies").value = 'Champion';
+          else document.getElementById("gymStrategies").value = i+1;
+      }
+    }
+    
+    function shouldMoveGym(){
+      const routeStrat = document.getElementById("routeStrategies").value;
+      if(routeStrat != 'Achievement') return false;
+      const currentGymList = player.town().content.filter(content => content instanceof Gym);
+      let gym, gymNum;
+      if(currentGymList.length == 1){
+          gym = currentGymList[0];
+      }
+      else{
+          let strategy = document.getElementById("gymStrategies").value;
+          if(strategy == 'Champion') return false;
+          let i = parseInt(strategy);
+          gym = currentGymList[i-1];
+      }
+      gymNum = gym.badgeReward;
+      return App.game.statistics.gymsDefeated[gymNum]() > 1000;
     }
     
     function startBattleAutoClicker(){
@@ -488,7 +530,7 @@ const declarations = {
         if(plot.stage() != 4) return false;
         let strat = document.getElementById("farmStrategies").value;
         if(strat == 'Replant Early') return true;
-        if(strat == 'Replant Late') return plot.age > plot.berryData.growthTime[4] - 15;
+        if(strat == 'Replant Late') return plot.age > plot.berryData.growthTime[4] - 3;
     }
     
     function shouldMulch(plot, strat){
