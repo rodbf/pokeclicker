@@ -142,6 +142,7 @@ const declarations = {
       if(App.game.gameState == GameConstants.GameState.town){
         if(shouldMoveGym()){
           nextGym();
+          return;
         }
         if(strategy == 'Champion'){
           for(let i = 0; i < player.town().content.length; i++){
@@ -186,8 +187,8 @@ const declarations = {
     }
     
     function shouldMoveGym(){
-      const routeStrat = document.getElementById("routeStrategies").value;
-      if(routeStrat != 'Achievement') return false;
+      const routeStrat = document.getElementById("gymAutoToggle").checked;
+      if(!routeStrat) return false;
       const currentGymList = player.town().content.filter(content => content instanceof Gym);
       if(currentGymList.length == 0) return false;
       let gym, gymNum;
@@ -241,7 +242,7 @@ const declarations = {
           {value: "Champion"}
         ]
       },
-      {type: "gap"}
+      {type: "checkbox", id: "gymAutoToggle", label: "Auto Move"},
     ];
     
     return {inputs};
