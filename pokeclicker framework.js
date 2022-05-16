@@ -137,7 +137,12 @@ const declarations = {
     
     function clickBattle(){
       let strategy = document.getElementById("gymStrategies").value;
+      
       if(App.game.gameState == GameConstants.GameState.town){
+        if(shouldMoveGym()){
+          nextGym();
+          return;
+        }
         if(strategy == 'Champion'){
           for(let i = 0; i < player.town().content.length; i++){
             if(player.town().content[i] instanceof Champion){
@@ -157,6 +162,46 @@ const declarations = {
       if(App.game.gameState == GameConstants.GameState.gym){
         GymBattle.clickAttack();
       }
+    }
+
+    function nextGym(){
+      var gymArray = Object.keys(GymList)
+      .map(function(key) {
+          return GymList[key];
+      });
+      const currentGymList = player.town().content.filter(content => content instanceof Gym);
+      if(currentGymList.length == 1){
+          let gym = currentGymList[0];
+          let gymNum = gym.badgeReward;
+          let nextGym = gymArray.find(gym => gym.badgeReward == gymNum +1);
+          MapHelper.moveToTown(nextGym.parent.name);
+      }
+      else{
+          let strategy = document.getElementById("gymStrategies").value;
+          if(strategy == 'Champion') return;
+          let i = parseInt(strategy);
+          if(i == 4) document.getElementById("gymStrategies").value = 'Champion';
+          else document.getElementById("gymStrategies").value = i+1;
+      }
+    }
+    
+    function shouldMoveGym(){
+      const routeStrat = document.getElementById("gymAutoToggle").checked;
+      if(!routeStrat) return false;
+      const currentGymList = player.town().content.filter(content => content instanceof Gym);
+      if(currentGymList.length == 0) return false;
+      let gym, gymNum;
+      if(currentGymList.length == 1){
+          gym = currentGymList[0];
+      }
+      else{
+          let strategy = document.getElementById("gymStrategies").value;
+          if(strategy == 'Champion') return false;
+          let i = parseInt(strategy);
+          gym = currentGymList[i-1];
+      }
+      gymNum = GameConstants.getGymIndex(gym.parent.name);
+      return App.game.statistics.gymsDefeated[gymNum]() > 1000;
     }
     
     function startBattleAutoClicker(){
@@ -196,7 +241,7 @@ const declarations = {
           {value: "Champion"}
         ]
       },
-      {type: "gap"}
+      {type: "checkbox", id: "gymAutoToggle", label: "Auto Move"},
     ];
     
     return {inputs};
