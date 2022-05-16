@@ -419,7 +419,7 @@ const declarations = {
       for(let i = 3; i >= 0; i--){
         App.game.breeding.hatchPokemonEgg(i);
       }
-      for(let i = 7; i >= 0; i--){
+      for(let j = 0; j < 8; j++){
         const queue = document.getElementById("hatcheryQueueToggle").checked;
         if((!queue && App.game.breeding.hasFreeEggSlot()) || (queue && App.game.breeding.queueList().length < 4)){
           let strat = document.getElementById("hatcheryStrategies").value;
@@ -436,11 +436,13 @@ const declarations = {
                 let poke = pokeList[i];
                 if(PokemonHelper.calcNativeRegion(poke.id) == player.highestRegion()){
                   App.game.breeding.addPokemonToHatchery(poke);
-                  return;
+                  break;
                 }
               }
             }
-            App.game.breeding.addPokemonToHatchery(pokeList[0]);
+            else{
+              App.game.breeding.addPokemonToHatchery(pokeList[0]);
+            }
           }
         }
       }
