@@ -298,7 +298,14 @@ const declarations = {
 
     function dungeonClicker(){
       if((App.game.gameState == GameConstants.GameState.town) && player.town().dungeon && document.getElementById("dungeonToggle").checked){
+        if(player.town().dungeon.tokenCost > App.game.wallet.currencies[GameConstants.Currency.dungeonToken]()){
+          document.getElementById("dungeonToggle").checked = false;
+          stopDungeonClicker();
+          return
+        }
+        else{
           DungeonRunner.initializeDungeon(player.town().dungeon);
+        }
       }
       if(!(App.game.gameState === GameConstants.GameState.dungeon)){
         return;
