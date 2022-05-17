@@ -200,7 +200,7 @@ const declarations = {
           let i = parseInt(strategy);
           gym = currentGymList[i-1];
       }
-      gymNum = GameConstants.getGymIndex(gym.parent.name);
+      gymNum = GameConstants.getGymIndex(gym.town);
       return App.game.statistics.gymsDefeated[gymNum]() > 1000;
     }
     
@@ -656,7 +656,7 @@ const declarations = {
         });
       }
     const executeBuyMulch = () => {
-        autobuyItems.filter(item => !item.name.includes('Mulch'))
+        autobuyItems.filter(item => item.name.includes('Mulch'))
         .forEach(item =>{
             if(shouldBuy(item)){
                 ItemList[item.name].buy(50);
