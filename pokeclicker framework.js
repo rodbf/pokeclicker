@@ -1,5 +1,5 @@
 const activeActions = [];
-const mainInterval = 1000;
+let mainInterval = 1000;
 
 /*
 layout config
@@ -896,7 +896,9 @@ function initFramework(){
     })
   });
   
-  createClass('.autoClickerInput',"display: flex; align-items: center; padding-left: 12px;");
+  createClass('.autoClickerInput',"display: flex; align-items: center; padding: 0 6px;");
+  createClass('.autoClickerInput:nth-child(3n+1)',"padding-left: 12px;");
+  createClass('.autoClickerInput:nth-child(3n)',"padding-right: 12px;");
   createClass('.autoClickerInput input, .autoClickerInput select',"margin-right: 8px;");
   createClass('.autoClickerInput select',"width: 100%; margin: 8px 0;");
   createClass(".autoClickerRow", "display: flex; align-items: center; flex-wrap: wrap;");
@@ -920,4 +922,23 @@ function main(){
 };
 
 initFramework();
-setInterval(main, mainInterval);
+//setInterval(main, mainInterval);
+runStaggeredActions();
+
+function runStaggeredActions(index = -1){
+  if(index >= 0){
+    const action = activeActions[index];
+    if((!(action.endCondition instanceof Function) && action.endCondition) || ((action.endCondition instanceof Function) && action.endCondition())){
+      action.onConditionFulfilled();
+      activeActions.splice(index, 1);
+      action.nextActions.map(nextAction => activeActions.push(nextAction));
+    }
+    else{
+      action.onConditionFailed();
+      action.execute();
+    }
+  }
+  const stagger = mainInterval / (activeActions.length || 1);
+  const nextAction = index > 0 ? index - 1 : activeActions.length - 1;
+  setTimeout(()=>runStaggeredActions(nextAction), stagger);
+}
