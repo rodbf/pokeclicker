@@ -184,6 +184,16 @@ plotStrategy.forEach(plot =>{
 
 conditionMap.forEach(cond => plantWithCondition(cond));
 
+
+let tryPetaya = true;
+function doPlant(){
+    if(tryPetaya){
+        conditionMap.forEach(cond => plantWithCondition(cond));
+        setTimeout(doPlant, 1000);
+    }
+}
+doPlant();
+
 /*
 exemplo
 plantar uma chesto(id = 1) no centro se o plot superior esquerdo estiver com menos que 20s pra morrer, harvesando se tiver algo pra harvestar no plot
