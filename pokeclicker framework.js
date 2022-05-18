@@ -74,7 +74,7 @@ const declarations = {
       const autoMasterball = document.getElementById("routeMasterballToggle").checked;
       if(autoMasterball){
         if(Battle.enemyPokemon() && PokemonHelper.getPokemonById(Battle.enemyPokemon().id).catchRate < 10 && Battle.enemyPokemon().shiny ){
-
+          
           App.game.pokeballs.notCaughtShinySelection = 3;
         }
         else{
@@ -163,25 +163,25 @@ const declarations = {
         GymBattle.clickAttack();
       }
     }
-
+    
     function nextGym(){
       var gymArray = Object.keys(GymList)
       .map(function(key) {
-          return GymList[key];
+        return GymList[key];
       });
       const currentGymList = player.town().content.filter(content => content instanceof Gym);
       if(currentGymList.length == 1){
-          let gym = currentGymList[0];
-          let gymNum = gym.badgeReward;
-          let nextGym = gymArray.find(gym => gym.badgeReward == gymNum +1);
-          MapHelper.moveToTown(nextGym.parent.name);
+        let gym = currentGymList[0];
+        let gymNum = gym.badgeReward;
+        let nextGym = gymArray.find(gym => gym.badgeReward == gymNum +1);
+        MapHelper.moveToTown(nextGym.parent.name);
       }
       else{
-          let strategy = document.getElementById("gymStrategies").value;
-          if(strategy == 'Champion') return;
-          let i = parseInt(strategy);
-          if(i == 4) document.getElementById("gymStrategies").value = 'Champion';
-          else document.getElementById("gymStrategies").value = i+1;
+        let strategy = document.getElementById("gymStrategies").value;
+        if(strategy == 'Champion') return;
+        let i = parseInt(strategy);
+        if(i == 4) document.getElementById("gymStrategies").value = 'Champion';
+        else document.getElementById("gymStrategies").value = i+1;
       }
     }
     
@@ -192,13 +192,13 @@ const declarations = {
       if(currentGymList.length == 0) return false;
       let gym, gymNum;
       if(currentGymList.length == 1){
-          gym = currentGymList[0];
+        gym = currentGymList[0];
       }
       else{
-          let strategy = document.getElementById("gymStrategies").value;
-          if(strategy == 'Champion') return false;
-          let i = parseInt(strategy);
-          gym = currentGymList[i-1];
+        let strategy = document.getElementById("gymStrategies").value;
+        if(strategy == 'Champion') return false;
+        let i = parseInt(strategy);
+        gym = currentGymList[i-1];
       }
       gymNum = GameConstants.getGymIndex(gym.town);
       return App.game.statistics.gymsDefeated[gymNum]() > 1000;
@@ -251,14 +251,14 @@ const declarations = {
     
     let dungeonClickerIntervalId = null;
     let dungeonClickerDelay = 1;
-
+    
     let bestPath = {goalType: null, path: []};
-
+    
     let dungeonStrategies = {
-        "Fast Clear": [3, 4],
-        "Fast no Chests": [4],
-        "Full Clear": [2, 3, 4],
-        "Full no Chests": [2, 4]
+      "Fast Clear": [3, 4],
+      "Fast no Chests": [4],
+      "Full Clear": [2, 3, 4],
+      "Full no Chests": [2, 4]
     }
     
     function dijkstra(){
@@ -307,7 +307,7 @@ const declarations = {
         }
       }
     }
-
+    
     function interact(){
       const currentTileType = DungeonRunner.map.currentTile().type();
       if(DungeonRunner.fighting() && !DungeonBattle.catching()){
@@ -332,7 +332,7 @@ const declarations = {
         move();
       }
     }
-
+    
     function move(){
       let direction = bestPath.path[0];
       bestPath.path.splice(0,1);
@@ -340,7 +340,7 @@ const declarations = {
         DungeonRunner.map["move"+direction]();
       }
     }
-
+    
     function dungeonClicker(){
       if((App.game.gameState == GameConstants.GameState.town) && player.town().dungeon && document.getElementById("dungeonToggle").checked){
         if(player.town().dungeon.tokenCost > App.game.wallet.currencies[GameConstants.Currency.dungeonToken]()){
@@ -507,7 +507,7 @@ const declarations = {
     const inputs = [
       {type: "checkbox", id: "hatcheryToggle", label: "Hatchery", onClick},
       {type: "select", id: "hatcheryStrategies"},
-
+      
       {type: "checkbox", id: "hatcheryQueueToggle", label: "Use queue"}
     ];
     
@@ -517,75 +517,75 @@ const declarations = {
   farm: () => {
     
     function execute(){
-        let plots = App.game.farming.plotList;
-        let strategy = document.getElementById("farmStrategies").value;
-        let mulchStrategy = document.getElementById("mulchStrategies").value;
-        if(strategy == 'Plant Selected'){
-            App.game.farming.harvestAll();
-            App.game.farming.plantAll(FarmController.selectedBerry());
-            return;
+      let plots = App.game.farming.plotList;
+      let strategy = document.getElementById("farmStrategies").value;
+      let mulchStrategy = document.getElementById("mulchStrategies").value;
+      if(strategy == 'Plant Selected'){
+        App.game.farming.harvestAll();
+        App.game.farming.plantAll(FarmController.selectedBerry());
+        return;
+      }
+      
+      for(let i = 0; i < plots.length; i++){
+        plot = plots[i];
+        const berry = plot.berry;
+        const mulchIndex = shouldMulch(plot, mulchStrategy);
+        if(mulchIndex != -1){
+          App.game.farming.addMulch(i, mulchIndex, 1);
         }
-    
-        for(let i = 0; i < plots.length; i++){
-            plot = plots[i];
-            const berry = plot.berry;
-            const mulchIndex = shouldMulch(plot, mulchStrategy);
-            if(mulchIndex != -1){
-                App.game.farming.addMulch(i, mulchIndex, 1);
-            }
-            if(shouldHarvest(plot)){
-                App.game.farming.harvest(i);
-                App.game.farming.plant(i, berry);
-            }        
-        }
+        if(shouldHarvest(plot)){
+          App.game.farming.harvest(i);
+          App.game.farming.plant(i, berry);
+        }        
+      }
     }
     
     function shouldHarvest(plot){
-        if(plot.stage() != 4) return false;
-        let strat = document.getElementById("farmStrategies").value;
-        if(strat == 'Replant Early') return true;
-        if(strat == 'Replant Late') return plot.age > plot.berryData.growthTime[4] - 3;
+      if(plot.stage() != 4) return false;
+      let strat = document.getElementById("farmStrategies").value;
+      if(strat == 'Replant Early') return true;
+      if(strat == 'Replant Late') return plot.age > plot.berryData.growthTime[4] - 3;
     }
     
     function shouldMulch(plot, strat){
-        if(plot.mulch != -1) return -1;
-        if (plot.berry == BerryType.None){
-            return strat == 'Surprise Open' ? 2 : -1;
+      if(plot.mulch != -1) return -1;
+      if (plot.berry == BerryType.None){
+        return strat == 'Surprise Open' ? 2 : -1;
+      }
+      switch(strat){
+        case 'None': 
+        return -1;
+        case 'Boost All':
+        if(plot.stage() == 4){ 
+          return -1
         }
-        switch(strat){
-            case 'None': 
-                return -1;
-            case 'Boost All':
-                if(plot.stage() == 4){ 
-                    return -1
-                }
-                return 0;
-            case 'Rich Only':
-                if(shouldHarvest(plot)){
-                    return 1;
-                }
-                return -1;
-            case 'Boost + Rich':
-                if(shouldHarvest(plot)){
-                    return 1;
-                }
-                if(plot.age < plot.berryData.growthTime[3] - 800){//boost until 10min left (not counting Sprayduck)
-                    return 0;
-                }
-                return -1;
-            case 'Surprise Planted':
-                if(plot.berry != BerryType.None){
-                    return 2;
-                }
-                return -1;
-            case 'Surprise All':
-                return 2;
-            default:
-                return -1;
+        return 0;
+        case 'Rich Only':
+        if(shouldHarvest(plot)){
+          return 1;
         }
+        return -1;
+        case 'Boost + Rich':
+        if(shouldHarvest(plot)){
+          return 1;
+        }
+        if(plot.age < plot.berryData.growthTime[3] - 800){//boost until 10min left (not counting Sprayduck)
+          return 0;
+        }
+        return -1;
+        case 'Surprise Planted':
+        if(plot.berry != BerryType.None){
+          return 2;
+        }
+        return -1;
+        case 'Surprise All':
+        return 2;
+        default:
+        return -1;
+      }
     }
-
-
+    
+    
     const farmAction = createAction({
       execute,
       endCondition: ()=>!document.getElementById("farmToggle").checked
@@ -610,16 +610,16 @@ const declarations = {
       {
         type: "select", id: "mulchStrategies", 
         options: [
-            {value:'None'},
-            {value:'Boost All'}, 
-            {value:'Rich Only'}, 
-            {value:'Boost + Rich'},
-            {value:'Surprise Open'},
-            {value:'Surprise Planted'}, 
-            {value:'Surprise All'}
+          {value:'None'},
+          {value:'Boost All'}, 
+          {value:'Rich Only'}, 
+          {value:'Boost + Rich'},
+          {value:'Surprise Open'},
+          {value:'Surprise Planted'}, 
+          {value:'Surprise All'}
         ]
       },
-
+      
     ];
     
     return {inputs};
@@ -629,105 +629,105 @@ const declarations = {
     
     const shouldBomb = () => (App.game.underground.energy >= (App.game.underground.getMaxEnergy() - 20));
     const shouldBuy = (item) => {
-        if(ItemList[item.name].price() > item.value) return false;
-        if(item.name == 'Ultraball'){
-            return App.game.pokeballs.pokeballs[2].quantity() < item.amount;
-        }
-        if(item.name == 'Boost_Mulch'){
-            return App.game.wallet.currencies[4]() > item.amount;
-        }
-        if(item.name.includes('Mulch') ){
-            return App.game.farming.mulchList[item.index]() < item.amount;
-        }
-        return player.itemList[item.name]() < item.amount;
+      if(ItemList[item.name].price() > item.value) return false;
+      if(item.name == 'Ultraball'){
+        return App.game.pokeballs.pokeballs[2].quantity() < item.amount;
+      }
+      if(item.name == 'Boost_Mulch'){
+        return App.game.wallet.currencies[4]() > item.amount;
+      }
+      if(item.name.includes('Mulch') ){
+        return App.game.farming.mulchList[item.index]() < item.amount;
+      }
+      return player.itemList[item.name]() < item.amount;
     }
     const executeBomb = () => {
-
+      
       if(shouldBomb()){
         Mine.bomb();
       }
     }
     const executeBuy = () => {
-        autobuyItems.filter(item => !item.name.includes('Mulch'))
-        .forEach(item =>{
-            if(shouldBuy(item)){
-                ItemList[item.name].buy(50);
-            }
-        });
-      }
+      autobuyItems.filter(item => !item.name.includes('Mulch'))
+      .forEach(item =>{
+        if(shouldBuy(item)){
+          ItemList[item.name].buy(50);
+        }
+      });
+    }
     const executeBuyMulch = () => {
-        autobuyItems.filter(item => item.name.includes('Mulch'))
-        .forEach(item =>{
-            if(shouldBuy(item)){
-                ItemList[item.name].buy(50);
-            }
-        });
+      autobuyItems.filter(item => item.name.includes('Mulch'))
+      .forEach(item =>{
+        if(shouldBuy(item)){
+          ItemList[item.name].buy(50);
+        }
+      });
     }
     
-
+    
     
     const bombAction = createAction({
       execute:executeBomb,
       endCondition: ()=>!document.getElementById("bomberToggle").checked
     });
     const buyAction = createAction({
-        execute:executeBuy,
-        endCondition: ()=>!document.getElementById("buyToggle").checked
+      execute:executeBuy,
+      endCondition: ()=>!document.getElementById("buyToggle").checked
     });
     const buyMulchAction = createAction({
-        execute:executeBuyMulch,
-        endCondition: ()=>!document.getElementById("buyMulchToggle").checked
+      execute:executeBuyMulch,
+      endCondition: ()=>!document.getElementById("buyMulchToggle").checked
     });
     
     const onClickBomb = () => {
-        
-
+      
+      
       if(document.getElementById("bomberToggle").checked){
         activeActions.push(bombAction);
       }
     }
     const onClickBuy = () => {
-        if(document.getElementById("buyToggle").checked){
-          activeActions.push(buyAction);
-        }
+      if(document.getElementById("buyToggle").checked){
+        activeActions.push(buyAction);
+      }
     }
     const onClickBuyMulch = () => {
-        if(document.getElementById("buyMulchToggle").checked){
-            activeActions.push(buyMulchAction);
-        }
+      if(document.getElementById("buyMulchToggle").checked){
+        activeActions.push(buyMulchAction);
+      }
     }
     
     
     const autobuyItems = [
-        {name:'Ultraball', value:2000, amount:3000},
-        {name:'xAttack', value:600, amount:3000},
-        {name:'xClick', value:400, amount:3000},
-        {name:'Lucky_egg', value:800, amount:3000},
-        {name:'Token_collector', value:1000, amount:3000},
-        {name:'Item_magnet', value:1500, amount:3000},
-        {name:'Lucky_incense', value:2000, amount:3000},
-        {name:'Boost_Mulch', value:50, amount:250000},
-        {name:'Rich_Mulch', value:100, amount:200, index:1},
-        {name:'Surprise_Mulch', value:150, amount:300, index:2},
+      {name:'Ultraball', value:2000, amount:3000},
+      {name:'xAttack', value:600, amount:3000},
+      {name:'xClick', value:400, amount:3000},
+      {name:'Lucky_egg', value:800, amount:3000},
+      {name:'Token_collector', value:1000, amount:3000},
+      {name:'Item_magnet', value:1500, amount:3000},
+      {name:'Lucky_incense', value:2000, amount:3000},
+      {name:'Boost_Mulch', value:50, amount:250000},
+      {name:'Rich_Mulch', value:100, amount:200, index:1},
+      {name:'Surprise_Mulch', value:150, amount:300, index:2},
     ];
-
+    
     const inputs = [
       {type: "checkbox", id: "bomberToggle", label: "Bombs", onClick:onClickBomb},
       {type: "checkbox", id: "buyToggle", label: "Buy Item ", onClick:onClickBuy},
       {type: "checkbox", id: "buyMulchToggle", label: "Buy Mulch", onClick:onClickBuyMulch}
-
+      
     ];
     
     return {inputs};
   },
   quests: () => {
-
+    
     let questList;
-
+    
     const refreshQuests = () => App.game.quests.refreshQuests();
-    const getShinyQuestIndex = () => {
+    const getQuestIndex = (questString) => {
       for(let i = 0; i < questList.length; i++){
-        if(questList[i].description.includes('shiny')){
+        if(questList[i].description.includes(questString)){
           return i;
         }
       }
@@ -738,42 +738,73 @@ const declarations = {
     const isQuestClaimed = (index) => questList[index].claimed();
     const claimReward = (index) => isQuestCompleted(index) && !isQuestClaimed(index) && App.game.quests.claimQuest(index);
     const acceptQuest = (index) => App.game.quests.canStartNewQuest() && !isQuestOngoing(index) && !isQuestCompleted(index) && App.game.quests.beginQuest(index);
+      
+    const startQuest = (questStr, shouldRefresh = false) => {
+      if(questStr == 'err'){
+        return;
+      }
+      questList = App.game.quests.questList();
+      let quest = getQuestIndex(questStr);
+      if(quest == -1){
+        if(shouldRefresh){
+          refreshQuests();
+        }
+        return;
+      }
+      if(isQuestCompleted(quest)){
+        if(!isQuestClaimed(quest)){
+          claimReward(quest);
+        }
+        if(shouldRefresh){
+          refreshQuests();
+        }
+        return;
+      }
+      if(isQuestOngoing(quest)){
+        return;
+      }
+      acceptQuest(quest);
+    }
     
     const execute = () => {
-      questList = App.game.quests.questList();
-      let shinyQuest = getShinyQuestIndex();
-      if(shinyQuest == -1){
-        refreshQuests();
+      const primary = document.getElementById("primaryQuest").value;
+      if(primary == 'err'){
+        document.getElementById("questsToggle").checked = false;
         return;
       }
-      if(isQuestCompleted(shinyQuest)){
-        if(!isQuestClaimed(shinyQuest)){
-          claimReward(shinyQuest);
-        }
-        refreshQuests();
-        return;
-      }
-      if(isQuestOngoing(shinyQuest)){
-        return;
-      }
-      acceptQuest(shinyQuest);
+      const secondary = document.getElementById("secondaryQuest").value;
+      const tertiary = document.getElementById("tertiaryQuest").value;
+      startQuest(primary, true);
+      startQuest(secondary);
+      startQuest(tertiary);
     }
-
+    
     const questAction = createAction({
       execute,
       endCondition: ()=>!document.getElementById("questsToggle").checked
     });
-
+    
     const onClick = () => {
       if(document.getElementById("questsToggle").checked){
         activeActions.push(questAction);
       }
     };
 
-    const inputs = [
-      {type: "checkbox", id: "questsToggle", label: "Shiny Quests", onClick}
+    const questOptions = [
+      {value:'shiny', label:'Catch shiny'},
+      {value:'Hatch', label:'Hatch eggs'}, 
+      {value:'dungeon tokens', label:'Dungeon Tokens'}
     ];
-
+    
+    const inputs = [
+      {type: 'gap'},
+      {type: "checkbox", id: "questsToggle", label: "Quests", onClick},
+      {type: 'gap'},
+      {type: "select", id: "primaryQuest", options: [{value:'err', label:'--Main--'}, ...questOptions]},
+      {type: "select", id: "secondaryQuest", options: [{value:'err', label:'--Optional--'}, ...questOptions]},
+      {type: "select", id: "tertiaryQuest", options: [{value:'err', label:'--Optional--'}, ...questOptions]}
+    ];
+    
     return {inputs};
   }
 };
@@ -867,7 +898,7 @@ function initFramework(){
   
   createClass('.autoClickerInput',"display: flex; align-items: center; padding-left: 12px;");
   createClass('.autoClickerInput input, .autoClickerInput select',"margin-right: 8px;");
-  createClass('.autoClickerInput select',"width: 100%;");
+  createClass('.autoClickerInput select',"width: 100%; margin: 8px 0;");
   createClass(".autoClickerRow", "display: flex; align-items: center; flex-wrap: wrap;");
   createClass(".autoClickerRow:nth-child(2n)", "background-color: rgba(0,0,0,.05); ")
   createClass(".autoClickerRow:not(:last-child)", "border-bottom-color: rgb(128, 128, 128);")
