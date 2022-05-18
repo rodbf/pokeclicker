@@ -719,6 +719,62 @@ const declarations = {
     ];
     
     return {inputs};
+  },
+  quests: () => {
+
+    let questList;
+
+    const refreshQuests = () => App.game.quests.refreshQuests();
+    const getShinyQuestIndex = () => {
+      for(let i = 0; i < questList.length; i++){
+        if(questList[i].description.includes('shiny')){
+          return i;
+        }
+      }
+      return -1;
+    };
+    const isQuestOngoing = (index) => questList[index].inProgress() && questList[index].progress() < 1;
+    const isQuestCompleted = (index) => questList[index].isCompleted();
+    const isQuestClaimed = (index) => questList[index].claimed();
+    const claimReward = (index) => isQuestCompleted(index) && !isQuestClaimed(index) && App.game.quests.claimQuest(index);
+    const acceptQuest = (index) => App.game.quests.canStartNewQuest() && !isQuestOngoing(index) && !isQuestCompleted(index) && App.game.quests.beginQuest(index);
+    
+    const execute = () => {
+      questList = App.game.quests.questList();
+      let shinyQuest = getShinyQuestIndex();
+      if(shinyQuest == -1){
+        refreshQuests();
+        return;
+      }
+      if(isQuestCompleted(shinyQuest)){
+        if(!isQuestClaimed(shinyQuest)){
+          claimReward(shinyQuest);
+        }
+        refreshQuests();
+        return;
+      }
+      if(isQuestOngoing(shinyQuest)){
+        return;
+      }
+      acceptQuest(shinyQuest);
+    }
+
+    const questAction = createAction({
+      execute,
+      endCondition: ()=>!document.getElementById("questsToggle").checked
+    });
+
+    const onClick = () => {
+      if(document.getElementById("questsToggle").checked){
+        activeActions.push(questAction);
+      }
+    };
+
+    const inputs = [
+      {type: "checkbox", id: "questsToggle", label: "Shiny Quests", onClick}
+    ];
+
+    return {inputs};
   }
 };
 
