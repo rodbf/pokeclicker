@@ -194,7 +194,7 @@ function checkPetaya(){
     for(let i = 0; i < plotList.length; i++){
         if(plotList[i].berry == 62) return true;
     }
-    return false;
+    return -1;
 }
 
 let tryPetaya = true;
