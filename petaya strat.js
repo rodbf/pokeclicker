@@ -6,7 +6,6 @@ function plantWithCondition({shouldHarvest=false,shouldShovel=true, condition, n
             App.game.farming.shovel(newPlant.plotId);
         }
     }
-    if()
     const conditionMaxAge = conditionPlot.berryData.growthTime[condition.toDeath?4:3];
     const timeLeft = conditionMaxAge - conditionPlot.age;
     if(timeLeft > condition.timeLeft){
@@ -29,7 +28,7 @@ const plotStrategy = [
     {
         plotNum:1,
         berryName:null,
-        berryNum:-1,
+        berryNum:62,
         timeLeft:0
     },
     {
@@ -41,7 +40,7 @@ const plotStrategy = [
     {
         plotNum:3,
         berryName:null,
-        berryNum:-1,
+        berryNum:62,
         timeLeft:0
     },
     {
@@ -51,21 +50,27 @@ const plotStrategy = [
         timeLeft:43200
     },
     {
+        plotNum:5,
+        berryName:'Shuca',
+        berryNum:42,
+        timeLeft:39120
+    },
+    {
         plotNum:6,
         berryName:null,
-        berryNum:-1,
+        berryNum:62,
         timeLeft:0
     },
     {
         plotNum:7,
         berryName:null,
-        berryNum:-1,
+        berryNum:62,
         timeLeft:0
     },
     {
         plotNum:8,
         berryName:null,
-        berryNum:-1,
+        berryNum:62,
         timeLeft:0
     },
     {
@@ -95,7 +100,7 @@ const plotStrategy = [
     {
         plotNum:13,
         berryName:null,
-        berryNum:-1,
+        berryNum:62,
         timeLeft:0
     },
     {
@@ -125,7 +130,7 @@ const plotStrategy = [
     {
         plotNum:18,
         berryName:null,
-        berryNum:-1,
+        berryNum:62,
         timeLeft:0
     },
     {
@@ -184,16 +189,44 @@ plotStrategy.forEach(plot =>{
 
 conditionMap.forEach(cond => plantWithCondition(cond));
 
+function checkPetaya(){
+    let plotList = App.game.farming.plotList;
+    for(let i = 0; i < plotList.length; i++){
+        if(plotList[i].berry == 62) return true;
+    }
+    return false;
+}
 
 let tryPetaya = true;
 function doPlant(){
+    
     if(tryPetaya){
+        let petaya = checkPetaya()
+        if(petaya != -1){
+            App.game.farming.harvestAll();
+            plantPasshos(petaya);
+            tryPetaya = false;
+        }
         conditionMap.forEach(cond => plantWithCondition(cond));
         setTimeout(doPlant, 1000);
     }
 }
 doPlant();
 
+function plantPasshos(petaya){
+    //plant to left, right, and all three below:
+    App.game.farming.plant(petaya-1, 36);
+    App.game.farming.plant(petaya+1, 36);
+    App.game.farming.plant(petaya+4, 36);
+    App.game.farming.plant(petaya+5, 36);
+    App.game.farming.plant(petaya+6, 36);
+
+    if(petaya != 1 && petaya != 3){
+        App.game.farming.plant(petaya-4, 36);
+        App.game.farming.plant(petaya-5, 36);
+        App.game.farming.plant(petaya-6, 36);
+    }
+}
 /*
 exemplo
 plantar uma chesto(id = 1) no centro se o plot superior esquerdo estiver com menos que 20s pra morrer, harvesando se tiver algo pra harvestar no plot
