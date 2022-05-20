@@ -144,18 +144,14 @@ const declarations = {
           return;
         }
         if(strategy == 'Champion'){
-          for(let i = 0; i < player.town().content.length; i++){
-            if(player.town().content[i] instanceof Champion){
-              document.querySelector(".list-group").children[i+1].querySelector("button")?.click();
-              return;
-            }
-          }   
+          if(player.town().content[4] instanceof Champion) {
+            GymRunner.startGym(player.town().content[4]);
+          }
         }
         else{
           let i = parseInt(strategy)-1;
           if(player.town().content[i] instanceof Gym){
-            document.querySelector(".list-group").children[i+1].querySelector("button")?.click();
-            return;
+            GymRunner.startGym(player.town().content[i]);
           }
         }
       }
